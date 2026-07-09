@@ -8,6 +8,7 @@ import aiohttp
 from Zaid import clients, app, ids
 
 async def start_bot():
+    Zaid.aiosession = aiohttp.ClientSession()
     await app.start()
     print("LOG: Founded Bot token Booting..")
     for all_module in ALL_MODULES:
@@ -23,6 +24,7 @@ async def start_bot():
         except Exception as e:
             print(f"{e}")
     await idle()
+await Zaid.aiosession.close()
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(start_bot())
