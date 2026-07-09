@@ -1,19 +1,28 @@
 import asyncio
 import importlib
-from pyrogram import Client, idle
+import aiohttp
+
+from pyrogram import idle
 from Zaid.helper import join
 from Zaid import clients, app, ids
+from Zaid.modules import ALL_MODULES
 import Zaid
-import aiohttp
-from Zaid import clients, app, ids
+
 
 async def start_bot():
+    # Create aiohttp session
     Zaid.aiosession = aiohttp.ClientSession()
+
+    # Start Bot Client
     await app.start()
     print("LOG: Founded Bot token Booting..")
-    for all_module in ALL_MODULES:
-        importlib.import_module("Zaid.modules" + all_module)
-        print(f"Successfully Imported {all_module} 💥")
+
+    # Load Modules
+    for module in ALL_MODULES:
+        importlib.import_module(f"Zaid.modules.{module}")
+        print(f"Successfully Imported {module} 💥")
+
+    # Start User Clients
     for cli in clients:
         try:
             await cli.start()
@@ -22,9 +31,24 @@ async def start_bot():
             print(f"Started {ex.first_name} 🔥")
             ids.append(ex.id)
         except Exception as e:
-            print(f"{e}")
-    await idle()
-await Zaid.aiosession.close()
+            print(e)
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(start_bot())
+    print("All Clients Started Successfully ✅")
+
+    try:
+        await idle()
+    finally:
+        await app.stop()
+
+        for cli in clients:
+            try:
+                await cli.stop()
+            except Exception:
+                pass
+
+        if Zaid.aiosession:
+            await Zaid.aiosession.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(start_bot())
